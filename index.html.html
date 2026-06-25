@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>내 일정</title>
+  <style>
+    :root {
+      --bg:#0f1117; --surface:#1c1f2b; --card:#252a3a;
+      --accent:#6c9fff; --accent3:#5de6b8;
+      --text:#eef0f8; --muted:#8890a8; --border:rgba(255,255,255,0.07);
+      --red:#ff5f6d; --yellow:#ffcc44; --radius:20px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    body{background:var(--bg);color:var(--text);font-family:-apple-system,'Apple SD Gothic Neo',sans-serif;min-height:100dvh;max-width:430px;margin:0 auto;padding-bottom:110px;overflow-x:hidden;}
+    .header{position:sticky;top:0;z-index:50;background:rgba(15,17,23,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:50px 20px 16px;display:flex;align-items:flex-end;justify-content:space-between;}
+    .header h1{font-size:26px;font-weight:700;}
+    .hdate{font-size:13px;color:var(--muted);margin-top:3px;}
+    .btn-icon{width:44px;height:44px;border-radius:50%;background:var(--card);border:1px solid var(--border);color:var(--accent);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+    .hero{margin:12px 20px 0;background:linear-gradient(135deg,#1e2a4a,#2a1a3e);border-radius:var(--radius);border:1px solid rgba(108,159,255,0.2);padding:20px;display:flex;align-items:center;gap:16px;}
+    .hclock{font-size:50px;font-weight:700;letter-spacing:-2px;color:var(--accent);line-height:1;min-width:116px;font-variant-numeric:tabular-nums;}
+    .hnlabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+    .hntitle{font-size:17px;font-weight:600;margin-top:5px;line-height:1.3;}
+    .hntime{font-size:13px;color:var(--accent3);margin-top:4px;}
+    .stitle{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin:22px 20px 10px;}
+    .slist{padding:0 20px;display:flex;flex-direction:column;gap:10px;}
+    .card{background:var(--card);border-radius:16px;padding:16px;display:flex;align-items:flex-start;gap:14px;border:1px solid var(--border);cursor:pointer;position:relative;overflow:hidden;}
+    .card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc,var(--accent));}
+    .card:active{opacity:0.7;}
+    .card.done{opacity:0.4;}
+    .card.done .ctitle{text-decoration:line-through;}
+    .ctimecol{min-width:52px;text-align:center;padding-top:2px;}
+    .ctime{font-size:16px;font-weight:700;color:var(--accent);display:block;font-variant-numeric:tabular-nums;}
+    .campm{font-size:11px;color:var(--muted);}
+    .cdot{width:8px;height:8px;border-radius:50%;background:var(--cc,var(--accent));margin:6px auto 0;}
+    .cbody{flex:1;}
+    .ctitle{font-size:17px;font-weight:600;line-height:1.35;}
+    .cmeta{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;}
+    .cbadge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,0.08);color:var(--muted);}
+    .cbadge.al{background:rgba(255,204,68,0.15);color:var(--yellow);}
+    .cbadge.rem{background:rgba(93,230,184,0.15);color:var(--accent3);}
+    .cnote{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.4;}
+    .cchk{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.05);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;flex-shrink:0;margin-top:2px;}
+    .card.done .cchk{background:var(--accent3);border-color:var(--accent3);}
+    .empty{text-align:center;padding:40px 20px;color:var(--muted);}
+    .empty .ei{font-size:44px;}
+    .empty p{margin-top:12px;font-size:15px;line-height:1.7;}
+    .tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(15,17,23,0.93);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:10px 0 28px;}
+    .titem{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;border:none;background:none;color:var(--muted);font-size:10px;}
+    .titem.on{color:var(--accent);}
+    .tico{font-size:22px;}
+    .fab{position:fixed;bottom:88px;right:calc(50% - 195px);width:56px;height:56px;border-radius:50%;background:var(--accent);border:none;color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(108,159,255,0.5);z-index:40;}
+    .fab:active{transform:scale(0.92);}
+    .view{display:none;}
+    .view.on{display:block;}
+    .wstrip{display:flex;gap:6px;padding:0 20px;overflow-x:auto;scrollbar-width:none;}
+    .wstrip::-webkit-scrollbar{display:none;}
+    .wday{flex:0 0 auto;min-width:50px;padding:10px 6px;border-radius:14px;text-align:center;cursor:pointer;}
+    .wday.on{background:var(--accent);}
+    .wdn{font-size:11px;color:var(--muted);font-weight:600;}
+    .wday.on .wdn{color:rgba(255,255,255,0.8);}
+    .wdnum{font-size:20px;font-weight:700;margin-top:2px;}
+    .wday.on .wdnum{color:#fff;}
+    .wddot{width:5px;height:5px;border-radius:50%;background:#ff7eb3;margin:4px auto 0;}
+    .wday.on .wddot{background:rgba(255,255,255,0.6);}
+    .wday.noe .wddot{opacity:0;}
+    .setlist{padding:0 20px;display:flex;flex-direction:column;gap:8px;}
+    .sitem{background:var(--card);border-radius:14px;padding:16px;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);}
+    .sileft{display:flex;align-items:center;gap:12px;}
+    .siico{font-size:22px;}
+    .sitxt{font-size:15px;font-weight:500;}
+    .sival{font-size:14px;color:var(--muted);}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:100;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+    .overlay.on{opacity:1;pointer-events:all;}
+    .sheet{width:100%;max-width:430px;margin:0 auto;background:var(--surface);border-radius:28px 28px 0 0;padding:0 20px 50px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(.4,0,.2,1);max-height:90dvh;overflow-y:auto;}
+    .overlay.on .sheet{transform:translateY(0);}
+    .shandle{width:40px;height:5px;background:var(--border);border-radius:3px;margin:14px auto 20px;}
+    .smtitle{font-size:20px;font-weight:700;margin-bottom:20px;}
+    .fg{margin-bottom:16px;}
+    .fl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:block;}
+    .fi,.fs,.fta{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--text);font-size:16px;font-family:inherit;outline:none;-webkit-appearance:none;appearance:none;}
+    .fi:focus,.fs:focus,.fta:focus{border-color:var(--accent);}
+    .fta{min-height:76px;resize:none;}
+    .frow{display:flex;gap:10px;}
+    .frow .fg{flex:1;}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;}
+    .chip{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;}
+    .chip.on{border-color:var(--cc2);color:var(--cc2);background:rgba(255,255,255,0.04);}
+    .arow{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid var(--border);}
+    .arow label{font-size:15px;}
+    .tw{position:relative;width:52px;height:30px;}
+    .ti{position:absolute;opacity:0;width:0;height:0;}
+    .tt{display:block;width:52px;height:30px;background:var(--card);border-radius:30px;border:1px solid var(--border);cursor:pointer;transition:background 0.2s;position:relative;}
+    .tt::after{content:'';position:absolute;width:24px;height:24px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform 0.2s;}
+    .ti:checked+.tt{background:var(--accent);border-color:var(--accent);}
+    .ti:checked+.tt::after{transform:translateX(22px);}
+    .bsave{width:100%;padding:16px;background:var(--accent);color:#fff;font-size:17px;font-weight:700;border:none;border-radius:14px;cursor:pointer;margin-top:10px;}
+    .bsave:active{opacity:0.85;}
+    .bdel{width:100%;padding:14px;background:transparent;color:var(--red);font-size:15px;font-weight:600;border:1.5px solid var(--red);border-radius:14px;cursor:pointer;margin-top:8px;}
+
+    /* 미리알림 안내 박스 */
+    .reminder-box{
+      background:rgba(93,230,184,0.1);border:1px solid rgba(93,230,184,0.3);
+      border-radius:14px;padding:14px 16px;margin-top:12px;
+    }
+    .reminder-box .rb-title{font-size:13px;font-weight:700;color:var(--accent3);margin-bottom:6px;}
+    .reminder-box .rb-desc{font-size:12px;color:var(--muted);line-height:1.7;}
+    .breminder{
+      width:100%;padding:14px;background:rgba(93,230,184,0.15);
+      color:var(--accent3);font-size:15px;font-weight:700;
+      border:1.5px solid var(--accent3);border-radius:14px;cursor:pointer;margin-top:8px;
+    }
+    .breminder:active{opacity:0.8;}
+
+    .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(40,45,60,0.96);color:var(--text);padding:12px 20px;border-radius:30px;font-size:14px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.3s,transform 0.3s;z-index:300;border:1px solid var(--border);}
+    .toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+    .gcard{margin:0 20px;background:var(--card);border-radius:16px;padding:18px;border:1px solid rgba(93,230,184,0.2);font-size:14px;color:var(--muted);line-height:1.9;}
+    .gcard strong{color:var(--accent);}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>📅 내 일정</h1>
+    <div class="hdate" id="hdate"></div>
+  </div>
+  <button class="btn-icon" onclick="todayAlert()">🔔</button>
+</div>
+
+<!-- 오늘 탭 -->
+<div class="view on" id="v0">
+  <div class="hero">
+    <div class="hclock" id="clock">00:00</div>
+    <div>
+      <div class="hnlabel">다음 일정</div>
+      <div class="hntitle" id="hnext">—</div>
+      <div class="hntime" id="hntime"></div>
+    </div>
+  </div>
+  <div class="stitle" id="tlabel">오늘 일정</div>
+  <div class="slist" id="tlist"></div>
+</div>
+
+<!-- 주간 탭 -->
+<div class="view" id="v1">
+  <div style="padding:14px 0 8px"><div class="wstrip" id="wstrip"></div></div>
+  <div class="stitle" id="wlabel"></div>
+  <div class="slist" id="wlist"></div>
+</div>
+
+<!-- 설정 탭 -->
+<div class="view" id="v2">
+  <div class="stitle">환경설정</div>
+  <div class="setlist">
+    <div class="sitem">
+      <div class="sileft"><span class="siico">💾</span><span class="sitxt">저장된 일정 수</span></div>
+      <span class="sival" id="tcnt">0개</span>
+    </div>
+    <div class="sitem" onclick="clearDone()" style="cursor:pointer">
+      <div class="sileft"><span class="siico">🗑</span><span class="sitxt">완료된 일정 삭제</span></div>
+      <span class="sival" style="color:var(--red)">삭제 ›</span>
+    </div>
+  </div>
+  <div class="stitle" style="margin-top:28px">📱 홈 화면에 추가하기</div>
+  <div class="gcard">
+    1️⃣ <strong>사파리</strong>로 이 페이지 열기<br>
+    2️⃣ 하단 <strong>공유 버튼</strong> (□↑) 탭<br>
+    3️⃣ <strong>홈 화면에 추가</strong> 선택<br>
+    4️⃣ 이후 앱처럼 전체화면으로 실행!
+  </div>
+  <div class="stitle" style="margin-top:28px">🔔 알람 사용법</div>
+  <div class="gcard">
+    일정 저장 시 <strong>미리 알림 등록</strong> 버튼을 누르면<br>
+    아이폰 <strong>미리 알림 앱</strong>이 자동으로 열려요.<br>
+    미리 알림 앱은 앱을 꺼도 <strong>정확히 알람</strong>이 울려요! ✅
+  </div>
+</div>
+
+<!-- 탭바 -->
+<div class="tabbar">
+  <button class="titem on" id="t0" onclick="goTab(0)"><span class="tico">📅</span>오늘</button>
+  <button class="titem" id="t1" onclick="goTab(1)"><span class="tico">📆</span>주간</button>
+  <button class="titem" id="t2" onclick="goTab(2)"><span class="tico">⚙️</span>설정</button>
+</div>
+
+<button class="fab" id="fab" onclick="openModal(null)">＋</button>
+
+<!-- 모달 -->
+<div class="overlay" id="modal" onclick="onOvClick(event)">
+  <div class="sheet">
+    <div class="shandle"></div>
+    <div class="smtitle" id="mtitle">새 일정 추가</div>
+    <div class="fg"><label class="fl">일정 제목</label><input class="fi" id="iTitle" placeholder="예) 병원 검진, 친구 약속" maxlength="40"></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">날짜</label><input class="fi" id="iDate" type="date"></div>
+      <div class="fg"><label class="fl">시간</label><input class="fi" id="iTime" type="time"></div>
+    </div>
+    <div class="fg"><label class="fl">카테고리</label><div class="chips" id="chips"></div></div>
+    <div class="fg"><label class="fl">메모</label><textarea class="fta" id="iNote" placeholder="장소, 준비물 등..."></textarea></div>
+    <div class="arow">
+      <label for="aTog">⏰ 알림 시간 설정</label>
+    </div>
+    <div class="fg">
+      <select class="fs" id="iBef">
+        <option value="0">알림 없음</option>
+        <option value="5">5분 전</option>
+        <option value="10">10분 전</option>
+        <option value="30" selected>30분 전</option>
+        <option value="60">1시간 전</option>
+        <option value="1440">하루 전</option>
+      </select>
+    </div>
+
+    <button class="bsave" onclick="saveItem()">✅ 저장하기</button>
+
+    <!-- 미리 알림 등록 버튼 (저장 후 표시) -->
+    <div id="reminderSection" style="display:none">
+      <div class="reminder-box">
+        <div class="rb-title">🔔 앱을 꺼도 알람이 울리게 하려면?</div>
+        <div class="rb-desc">
+          아래 버튼을 누르면 아이폰 <strong style="color:var(--accent3)">미리 알림 앱</strong>이 열려요.<br>
+          내용이 자동으로 채워져 있으니 <strong style="color:var(--accent3)">오른쪽 위 "추가"</strong>만 탭하면 완료!
+        </div>
+      </div>
+      <button class="breminder" id="btnReminder" onclick="openReminder()">📲 미리 알림 앱에 등록하기</button>
+    </div>
+
+    <button class="bdel" id="bdel" style="display:none" onclick="delItem()">🗑 이 일정 삭제</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var CATS=[
+  {label:'📌 기본',key:'기본',color:'#6c9fff'},
+  {label:'💊 건강',key:'건강',color:'#ff7eb3'},
+  {label:'👨‍👩‍👧 가족',key:'가족',color:'#5de6b8'},
+  {label:'💰 재정',key:'재정',color:'#ffcc44'},
+  {label:'🎯 취미',key:'취미',color:'#c084fc'},
+  {label:'🤝 약속',key:'약속',color:'#fb923c'}
+];
+var CMAP={};
+CATS.forEach(function(c){CMAP[c.key]=c.color;});
+var DAYS=['일','월','화','수','목','금','토'];
+var SK='sched_v3';
+
+var db=load();
+var eid=null;
+var scat='기본';
+var swday=null;
+var ctab=0;
+var lastSaved=null; // 마지막 저장 일정 (미리알림 등록용)
+
+function load(){try{return JSON.parse(localStorage.getItem(SK))||[];}catch(e){return[];}}
+function persist(){localStorage.setItem(SK,JSON.stringify(db));}
+
+function dstr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function pad(n){return String(n).padStart(2,'0');}
+function today(){return dstr(new Date());}
+function fdate(ds){var d=new Date(ds+'T00:00:00');return (d.getMonth()+1)+'월 '+d.getDate()+'일 ('+DAYS[d.getDay()]+')';}
+function ftime(t){
+  if(!t)return'';
+  var p=t.split(':'),h=parseInt(p[0]),m=p[1];
+  var ap=h<12?'오전':'오후';
+  var hh=h===0?12:h>12?h-12:h;
+  return ap+' '+hh+':'+m;
+}
+function sortT(a,b){
+  if(!a.time&&!b.time)return 0;
+  if(!a.time)return 1;if(!b.time)return-1;
+  return a.time<b.time?-1:1;
+}
+
+function tick(){var n=new Date();document.getElementById('clock').textContent=pad(n.getHours())+':'+pad(n.getMinutes());}
+setInterval(tick,1000);tick();
+(function(){document.getElementById('hdate').textContent=fdate(today());})();
+
+function updateHero(){
+  var t=today(),n=new Date(),nm=n.getHours()*60+n.getMinutes();
+  var coming=db.filter(function(s){
+    if(s.done||s.date!==t||!s.time)return false;
+    var p=s.time.split(':');return parseInt(p[0])*60+parseInt(p[1])>nm;
+  }).sort(sortT);
+  var nx=coming[0];
+  document.getElementById('hnext').textContent=nx?nx.title:'오늘 남은 일정 없음';
+  document.getElementById('hntime').textContent=nx?ftime(nx.time):'';
+}
+
+function renderToday(){
+  var t=today(),list=db.filter(function(s){return s.date===t;}).sort(sortT);
+  updateHero();
+  var el=document.getElementById('tlist');
+  document.getElementById('tlabel').textContent='오늘 일정'+(list.length?' ('+list.length+'건)':'');
+  el.innerHTML='';
+  if(!list.length){el.innerHTML='<div class="empty"><div class="ei">☀️</div><p>오늘 일정이 없어요.<br>+ 버튼으로 추가해보세요!</p></div>';return;}
+  list.forEach(function(s){el.appendChild(mkCard(s));});
+}
+
+function renderWeek(){
+  var strip=document.getElementById('wstrip');strip.innerHTML='';
+  var n=new Date();
+  if(!swday)swday=today();
+  for(var i=0;i<7;i++){
+    var d=new Date(n);d.setDate(n.getDate()-n.getDay()+i);
+    var ds=dstr(d),has=db.some(function(s){return s.date===ds&&!s.done;});
+    var div=document.createElement('div');
+    div.className='wday'+(ds===swday?' on':'')+(has?'':' noe');
+    div.innerHTML='<div class="wdn">'+DAYS[d.getDay()]+'</div><div class="wdnum">'+d.getDate()+'</div><div class="wddot"></div>';
+    (function(ds2){div.onclick=function(){swday=ds2;renderWeek();};})(ds);
+    strip.appendChild(div);
+  }
+  document.getElementById('wlabel').textContent=fdate(swday);
+  var el=document.getElementById('wlist'),list=db.filter(function(s){return s.date===swday;}).sort(sortT);
+  el.innerHTML='';
+  if(!list.length){el.innerHTML='<div class="empty"><div class="ei">🗓</div><p>이 날은 일정이 없어요.</p></div>';return;}
+  list.forEach(function(s){el.appendChild(mkCard(s));});
+}
+
+function mkCard(s){
+  var color=CMAP[s.cat]||'#6c9fff';
+  var div=document.createElement('div');
+  div.className='card'+(s.done?' done':'');
+  div.style.setProperty('--cc',color);
+  var td='--:--',ap='';
+  if(s.time){var p=s.time.split(':'),h=parseInt(p[0]),m=p[1];ap=h<12?'오전':'오후';var hh=h===0?12:h>12?h-12:h;td=hh+':'+m;}
+  var abl=s.alarmBefore>0?'<span class="cbadge al">⏰ '+s.alarmBefore+'분 전</span>':'';
+  var reml=s.reminderSet?'<span class="cbadge rem">📲 미리알림 등록됨</span>':'';
+  var nl=s.note?'<div class="cnote">'+s.note+'</div>':'';
+  div.innerHTML='<div class="ctimecol"><span class="ctime">'+td+'</span><span class="campm">'+ap+'</span><div class="cdot"></div></div>'+
+    '<div class="cbody"><div class="ctitle">'+s.title+'</div><div class="cmeta"><span class="cbadge">'+(s.cat||'기본')+'</span>'+abl+reml+'</div>'+nl+'</div>'+
+    '<div class="cchk">'+(s.done?'✓':'')+'</div>';
+  div.querySelector('.cchk').addEventListener('click',function(e){e.stopPropagation();toggleDone(s.id);});
+  div.addEventListener('click',function(){openModal(s.id);});
+  return div;
+}
+
+function toggleDone(id){
+  var s=db.find(function(x){return x.id===id;});if(!s)return;
+  s.done=!s.done;persist();renderAll();
+  showToast(s.done?'✅ 완료 처리했어요':'↩️ 완료 취소했어요');
+}
+
+function goTab(n){
+  ctab=n;
+  ['v0','v1','v2'].forEach(function(id,i){document.getElementById(id).classList.toggle('on',i===n);});
+  for(var i=0;i<3;i++)document.getElementById('t'+i).classList.toggle('on',i===n);
+  document.getElementById('fab').style.display=n===2?'none':'flex';
+  if(n===1)renderWeek();
+  if(n===2)document.getElementById('tcnt').textContent=db.length+'개';
+}
+
+function buildChips(){
+  var el=document.getElementById('chips');el.innerHTML='';
+  CATS.forEach(function(c){
+    var d=document.createElement('div');
+    d.className='chip'+(c.key===scat?' on':'');
+    d.style.setProperty('--cc2',c.color);
+    d.textContent=c.label;
+    (function(k){d.onclick=function(){scat=k;buildChips();};})(c.key);
+    el.appendChild(d);
+  });
+}
+
+function openModal(id){
+  eid=id||null;
+  lastSaved=null;
+  document.getElementById('mtitle').textContent=id?'일정 수정':'새 일정 추가';
+  document.getElementById('bdel').style.display=id?'block':'none';
+  document.getElementById('reminderSection').style.display='none';
+  if(id){
+    var s=db.find(function(x){return x.id===id;});if(!s)return;
+    document.getElementById('iTitle').value=s.title;
+    document.getElementById('iDate').value=s.date;
+    document.getElementById('iTime').value=s.time||'';
+    document.getElementById('iNote').value=s.note||'';
+    document.getElementById('iBef').value=s.alarmBefore||0;
+    scat=s.cat||'기본';
+  }else{
+    document.getElementById('iTitle').value='';
+    document.getElementById('iDate').value=today();
+    document.getElementById('iTime').value='';
+    document.getElementById('iNote').value='';
+    document.getElementById('iBef').value='30';
+    scat='기본';
+  }
+  buildChips();
+  document.getElementById('modal').classList.add('on');
+}
+function closeModal(){document.getElementById('modal').classList.remove('on');}
+function onOvClick(e){if(e.target===document.getElementById('modal'))closeModal();}
+
+function saveItem(){
+  var title=document.getElementById('iTitle').value.trim();
+  var date=document.getElementById('iDate').value;
+  if(!title){showToast('⚠️ 제목을 입력해주세요');return;}
+  if(!date){showToast('⚠️ 날짜를 선택해주세요');return;}
+  var ex=eid?db.find(function(x){return x.id===eid;}):null;
+  var alarmBefore=parseInt(document.getElementById('iBef').value)||0;
+  var s={
+    id:eid||('id'+Date.now()),
+    title:title,date:date,
+    time:document.getElementById('iTime').value||null,
+    cat:scat,
+    note:document.getElementById('iNote').value.trim(),
+    alarmBefore:alarmBefore,
+    reminderSet:ex?ex.reminderSet:false,
+    done:ex?ex.done:false,
+    createdAt:ex?ex.createdAt:Date.now()
+  };
+  if(eid){var idx=db.findIndex(function(x){return x.id===eid;});if(idx!==-1)db[idx]=s;}
+  else db.push(s);
+  persist();
+  lastSaved=s;
+  renderAll();
+  showToast(eid?'✏️ 수정했어요':'📅 일정 추가했어요');
+
+  // 시간이 있고 알림 설정한 경우 미리알림 버튼 표시
+  if(s.time && alarmBefore > 0){
+    document.getElementById('reminderSection').style.display='block';
+  } else {
+    // 시간 없으면 바로 닫기
+    setTimeout(closeModal, 800);
+  }
+}
+
+// ── 핵심: 미리 알림 앱 열기 ──────────────────────────────
+function openReminder(){
+  if(!lastSaved)return;
+  var s=lastSaved;
+
+  // 알람 시각 계산
+  var alarmDate=null;
+  if(s.time && s.alarmBefore>0){
+    var dt=new Date(s.date+'T'+s.time);
+    dt.setMinutes(dt.getMinutes()-s.alarmBefore);
+    alarmDate=dt;
+  }
+
+  // 미리 알림 앱 URL 스킴 생성
+  // x-apple-reminderkit://REMCDReminder/?title=...&dueDate=...
+  var title=encodeURIComponent(s.title+(s.note?' — '+s.note:''));
+  var url;
+
+  if(alarmDate){
+    // ISO 포맷으로 날짜 전달
+    var iso=alarmDate.toISOString();
+    url='x-apple-reminderkit://REMCDReminder/?title='+title+'&dueDateISO='+encodeURIComponent(iso);
+  } else {
+    url='x-apple-reminderkit://REMCDReminder/?title='+title;
+  }
+
+  // 미리 알림 앱 실행 시도
+  window.location.href=url;
+
+  // 등록됨 표시
+  var idx=db.findIndex(function(x){return x.id===s.id;});
+  if(idx!==-1){db[idx].reminderSet=true;persist();}
+  renderAll();
+  showToast('📲 미리 알림 앱이 열립니다!');
+  setTimeout(closeModal,1200);
+}
+
+function delItem(){
+  if(!eid)return;
+  if(!confirm('이 일정을 삭제할까요?'))return;
+  db=db.filter(function(x){return x.id!==eid;});
+  persist();closeModal();renderAll();showToast('🗑 삭제했어요');
+}
+
+function clearDone(){
+  var cnt=db.filter(function(s){return s.done;}).length;
+  if(!cnt){showToast('완료된 일정이 없어요');return;}
+  if(!confirm('완료된 일정 '+cnt+'개를 삭제할까요?'))return;
+  db=db.filter(function(s){return!s.done;});
+  persist();renderAll();showToast('🗑 '+cnt+'개 삭제했어요');
+}
+
+function todayAlert(){
+  var t=today(),list=db.filter(function(s){return s.date===t&&!s.done;}).sort(sortT);
+  if(!list.length){showToast('오늘 남은 일정이 없어요');return;}
+  alert('📅 오늘의 일정\n\n'+list.map(function(s){return ftime(s.time)+' '+s.title;}).join('\n'));
+}
+
+function renderAll(){
+  renderToday();
+  if(ctab===1)renderWeek();
+  if(ctab===2)document.getElementById('tcnt').textContent=db.length+'개';
+}
+function showToast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');
+  setTimeout(function(){t.classList.remove('on');},2500);
+}
+
+renderAll();
+</script>
+</body>
+</html>
